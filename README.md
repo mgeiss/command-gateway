@@ -4,7 +4,7 @@
 Based on Apache Cassandra and Apache ActiveMQ this implementation utilizes Spring to provide a tiny implementation to handle commands for CQRS pattern implementations.
 
 ## Usage
-To enable processing in you project, add @EnableCommandProcessing to your JavaConfig, or define a bean of type _CommandJavaConfiguration_ in your XML configuration.
+To enable command processing in you project, add @EnableCommandProcessing to your JavaConfig, or define a bean of type _CommandJavaConfiguration_ in your XML configuration.
 
 A running sample can be found at the test package, [CommandGatewayIntegrationTest](https://github.com/mgeiss/command-gateway/blob/master/src/test/java/lab/mage/command/integration/CommandGatewayIntegrationTest.java) .
 
