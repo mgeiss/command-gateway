@@ -1,0 +1,120 @@
+group 'lab.mage.spring'
+version '0.1.0-snapshot'
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.10.0'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.6'
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'license'
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+repositories {
+    jcenter()
+}
+
+ext.versions = [
+        spring       : '4.2.5.RELEASE',
+        springdata   : '1.4.1.RELEASE',
+        activemq     : '5.13.2',
+        gson         : '2.6.1',
+        logback      : '1.1.3',
+        slf4j        : '1.7.13',
+        findbugs     : '3.0.1',
+        junit        : '4.12',
+        springtest   : '4.2.5.RELEASE',
+        cassandraunit: '2.1.9.2'
+]
+
+configurations {
+    compile.exclude group: 'commons-logging', module: 'commons-logging'
+}
+
+dependencies {
+    compile(
+            [group: 'org.springframework', name: 'spring-context', version: versions.spring],
+            [group: 'org.springframework', name: 'spring-jms', version: versions.spring],
+            [group: 'org.springframework.data', name: 'spring-data-cassandra', version: versions.springdata],
+            [group: 'org.apache.activemq', name: 'activemq-spring', version: versions.activemq],
+            [group: 'com.google.code.gson', name: 'gson', version: versions.gson],
+            [group: 'ch.qos.logback', name: 'logback-classic', version: versions.logback],
+            [group: 'org.slf4j', name: 'jcl-over-slf4j', version: versions.slf4j],
+            [group: 'com.google.code.findbugs', name: 'jsr305', version: versions.findbugs]
+    )
+    testCompile(
+            [group: 'junit', name: 'junit', version: versions.junit],
+            [group: 'org.springframework', name: 'spring-test', version: versions.springtest],
+            [group: 'org.cassandraunit', name: 'cassandra-unit', version: versions.cassandraunit]
+    )
+}
+
+license {
+    header rootProject.file('HEADER')
+    strictCheck true
+    mapping {
+        java = 'SLASHSTAR_STYLE'
+        yaml = 'SCRIPT_STYLE'
+    }
+}
+
+publishing {
+    publications {
+        commandPublication(MavenPublication) {
+            groupId project.group
+            artifactId project.name
+            version project.version
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+        }
+    }
+}
+
+bintray {
+    user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
+    key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
+    publications = ['commandPublication']
+    pkg {
+        repo = 'maven'
+        name = 'lab.mage:command'
+        userOrg = user
+        licenses = ['Apache-2.0']
+        vcsUrl = 'https://github.com/mgeiss/coammnd.git'
+        version {
+            name = project.version
+            desc = 'Spring component to enable command processing.'
+            vcsTag = project.version
+            attributes = ['gradle-plugin': 'com.use.less:com.use.less.gradle:gradle-useless-plugin']
+            mavenCentralSync {
+                sync = true
+            }
+        }
+    }
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar, javadocJar
+}
